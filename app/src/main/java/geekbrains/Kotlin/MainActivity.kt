@@ -1,14 +1,19 @@
-package geekbrains.Kotlin;
+package geekbrains.Kotlin
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
-import android.os.Bundle;
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-public class MainActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        button.setOnClickListener{
+            when(textView.text){
+                getString(R.string.helloWorld) -> textView.text = getString(R.string.helloKotlin)
+                getString(R.string.helloKotlin) -> textView.text = getString(R.string.helloWorld)
+            }
+        }
     }
 }
