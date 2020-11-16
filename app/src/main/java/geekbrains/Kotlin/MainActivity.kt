@@ -9,8 +9,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        button.setOnClickListener{
-            when(textView.text){
+        button.setOnClickListener {
+            when (textView.text) {
                 getString(R.string.helloWorld) -> textView.text = getString(R.string.helloKotlin)
                 getString(R.string.helloKotlin) -> textView.text = getString(R.string.helloWorld)
             }
