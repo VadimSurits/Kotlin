@@ -3,4 +3,6 @@
     <string name="button">Button</string>
     <string name="helloKotlin">Hello Kotlin!</string>
     <string name="helloWorld">Hello World!</string>
+    <string name="note_head">Заголовок заметки</string>
+    <string name="note_body">Текст заметки</string>
 </resources>
