@@ -12,7 +12,6 @@ class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             title.text = note.title
             body.text = note.note
             setBackgroundColor(note.color)
-
         }
     }
 }
