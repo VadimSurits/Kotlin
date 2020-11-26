@@ -1,37 +1,24 @@
 package geekbrains.Kotlin.data
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import geekbrains.Kotlin.data.db.FireStoreDatabaseProvider
 import java.util.*
+
+//Repository - это класс, который отвечает за получение и сохранение заметок.
 
 private val idRandom = Random(0)
 val noteId: Long
     get() = idRandom.nextLong()
 
+class Repository(val provider: FireStoreDatabaseProvider) : NotesRepository {
 
-object Repository {
-    val notes: MutableList<Note> = mutableListOf()
-    private val allNotes = MutableLiveData(getListForNotify())
-
-    fun observeNotes(): LiveData<List<Note>> {
-        return allNotes
+    override fun observeNotes(): LiveData<List<Note>> {
+        return provider.observeNotes()
     }
 
-    fun addOrReplaceNote(newNote: Note) {
-        notes.find { it.id == newNote.id }?.let {
-            if (it == newNote) return
-
-            notes.remove(it)
-        }
-
-        notes.add(newNote)
-
-        allNotes.postValue(
-                getListForNotify()
-        )
-    }
-
-    private fun getListForNotify(): List<Note> = notes.toMutableList().also {
-        it.reverse()
+    override fun addOrReplaceNote(newNote: Note): LiveData<Result<Note>> {
+        return provider.addOrReplaceNote(newNote)
     }
 }
+
+val notesRepository: NotesRepository by lazy { Repository(FireStoreDatabaseProvider()) }

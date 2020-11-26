@@ -28,6 +28,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
         mainRecycler.adapter = adapter
 
+        //Подписка на изменения LiveData
         viewMode.observeViewState().observe(viewLifecycleOwner) {
             when (it) {
                 is ViewState.Value -> {

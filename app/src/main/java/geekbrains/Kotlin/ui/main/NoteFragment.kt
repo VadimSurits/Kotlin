@@ -2,6 +2,7 @@ package geekbrains.Kotlin.ui.main
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
@@ -29,11 +30,18 @@ class NoteFragment : Fragment(R.layout.note_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        confirmButton()
-
         viewModel.note?.let {
             titleEt.setText(it.title)
             bodyEt.setText(it.note)
+        }
+
+        viewModel.showError().observe(viewLifecycleOwner) {
+            Toast.makeText(requireContext(), "Error while saving note!", Toast.LENGTH_LONG).show()
+        }
+
+        fab_confirm.setOnClickListener {
+            viewModel.saveNote()
+            activity?.onBackPressed()
         }
 
         titleEt.addTextChangedListener {
@@ -55,12 +63,6 @@ class NoteFragment : Fragment(R.layout.note_fragment) {
             fragment.arguments = arguments
 
             return fragment
-        }
-    }
-
-    private fun confirmButton() {
-        fab_confirm.setOnClickListener {
-            activity?.onBackPressed()
         }
     }
 }
