@@ -1,9 +1,10 @@
-package geekbrains.Kotlin.data
+package geekbrains.Kotlin.model
 
 import android.content.Context
 import android.os.Parcelable
 import androidx.core.content.ContextCompat
 import geekbrains.Kotlin.R
+import geekbrains.Kotlin.data.noteId
 import kotlinx.android.parcel.Parcelize
 
 //Класс Note: Главная часть приложения — это заметка. У нее несколько свойств: id, заголовок,

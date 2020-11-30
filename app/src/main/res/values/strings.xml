@@ -5,4 +5,6 @@
     <string name="helloWorld">Hello World!</string>
     <string name="note_head">Заголовок заметки</string>
     <string name="note_body">Текст заметки</string>
+    <string name="authentification">Авторизация</string>
+    <string name="logout_menu_title">Выход из учетной записи</string>
 </resources>

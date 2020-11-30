@@ -1,7 +1,7 @@
 package geekbrains.Kotlin.ui.main
 
 import androidx.lifecycle.*
-import geekbrains.Kotlin.data.Note
+import geekbrains.Kotlin.model.Note
 import geekbrains.Kotlin.data.notesRepository
 
 class NoteViewModel(var note: Note?) : ViewModel() {

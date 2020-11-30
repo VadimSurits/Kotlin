@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import geekbrains.Kotlin.R
-import geekbrains.Kotlin.data.Note
+import geekbrains.Kotlin.model.Note
 import kotlinx.android.synthetic.main.note_fragment.*
 
 @Suppress("UNCHECKED_CAST")

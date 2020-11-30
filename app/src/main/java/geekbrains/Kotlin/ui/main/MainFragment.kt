@@ -1,13 +1,15 @@
 package geekbrains.Kotlin.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import com.firebase.ui.auth.AuthUI
 import geekbrains.Kotlin.R
-import geekbrains.Kotlin.data.Note
+import geekbrains.Kotlin.model.Note
 import geekbrains.Kotlin.ui.main.adapter.NotesAdapter
 import kotlinx.android.synthetic.main.main_fragment.*
 
@@ -21,6 +23,9 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //Добавили меню с возможностью logout
+        setToolbarMenu()
 
         val adapter = NotesAdapter {
             navigateToNote(it)
@@ -61,5 +66,26 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun navigateToCreation() {
         (requireActivity() as MainActivity).navigateTo(NoteFragment.create(null))
+    }
+
+    //Метод для отображения на toolbar меню с возможностью Logout
+    private fun setToolbarMenu() {
+        toolbar.inflateMenu(R.menu.toolbar_menu)
+        toolbar.setOnMenuItemClickListener {
+            if (it.itemId == R.id.logout) {
+                logOut()
+                true
+            }
+            false
+        }
+    }
+
+    //Метод для Logout
+    private fun logOut() {
+        AuthUI.getInstance()
+                .signOut(this.requireContext())
+                .addOnCompleteListener {
+                    startActivity(Intent(this.requireContext(), SplashActivity::class.java))
+                }
     }
 }

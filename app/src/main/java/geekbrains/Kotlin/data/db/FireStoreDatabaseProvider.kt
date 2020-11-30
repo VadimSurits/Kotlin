@@ -3,13 +3,21 @@ package geekbrains.Kotlin.data.db
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QueryDocumentSnapshot
-import geekbrains.Kotlin.data.Note
+import geekbrains.Kotlin.errors.NoAuthException
+import geekbrains.Kotlin.model.Note
+import geekbrains.Kotlin.model.User
 
 //Корневым элементом структуры данных будет коллекция notes. Вынесем это имя в константу
 //верхнего уровня.
 private const val NOTES_COLLECTION = "notes"
+
+//Константа для users
+private const val USERS_COLLECTION = "users"
 
 //Также создали свойство TAG для отображения в логах класса, из которого эти логи.
 const val TAG = "FireStoreDatabase"
@@ -28,9 +36,11 @@ class FireStoreDatabaseProvider : DatabaseProvider {
     //Чтобы создать новую коллекцию, достаточно получить экземпляр базы данных для приложения:
     private val db = FirebaseFirestore.getInstance()
 
-    //И вызвать у него метод collection() с именем нужной коллекции:
-    private val notesReference = db.collection(NOTES_COLLECTION)
     private val result = MutableLiveData<List<Note>>()
+
+    // Получение currentUser из FirebaseAuth
+    private val currentUser: FirebaseUser?
+        get() = FirebaseAuth.getInstance().currentUser
 
     //Есть ссылка на коллекцию — создаем методы для получения и сохранения документов в ней:
     private var subscribedOnDb = false
@@ -39,6 +49,9 @@ class FireStoreDatabaseProvider : DatabaseProvider {
         if (!subscribedOnDb) subscribeForDbChanging()
         return result
     }
+
+    //Метод для получения нового user-а
+    override fun getCurrentUser() = currentUser?.run { User(displayName,email) }
 
     //Чтобы получить ссылку на документ, надо вызвать метод document(), передав в него имя документа.
     //Это будет id заметки, так как оно уникально и хранится в заметке. FireStore сама может генерировать
@@ -53,38 +66,65 @@ class FireStoreDatabaseProvider : DatabaseProvider {
     override fun addOrReplaceNote(newNote: Note): LiveData<Result<Note>> {
         val result = MutableLiveData<Result<Note>>()
 
-        notesReference
-                .document(newNote.id.toString())
-                .set(newNote)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Note $newNote is saved")
-                    result.value = Result.success(newNote)
-                }
-                .addOnFailureListener {
-                    Log.d(TAG, "Error saving note $newNote, message: ${it.message}")
-                    result.value = Result.failure(it)
-                }
+        handleNotesReference(
+                {
+                    getUserNotesCollection()
+                            .document(newNote.id.toString())
+                            .set(newNote)
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Note $newNote is saved")
+                                result.value = Result.success(newNote)
+                            }
+                            .addOnFailureListener {
+                                Log.e(TAG, "Error saving note $newNote, message: ${it.message}")
+                                result.value = Result.failure(it)
+                            }
+                }, {
+            Log.e(TAG, "Error getting reference note $newNote, message: ${it.message}")
+            result.value = Result.failure(it)
+        }
+        )
         return result
     }
 
+    //Метод получения заметок конкретного пользователя
+    private fun getUserNotesCollection() = currentUser?.let {
+        db.collection(USERS_COLLECTION).document(it.uid).collection(NOTES_COLLECTION)
+    } ?: throw NoAuthException()
+
     //При изменении или добавлении документа сразу получим обновленную коллекцию.
     private fun subscribeForDbChanging() {
-        notesReference.addSnapshotListener { snapshot, e ->
-            if (e != null) {
-                Log.e(TAG, "Observe note exception:$e")
-            } else if (snapshot != null) {
-                val notes = mutableListOf<Note>()
+        handleNotesReference(
+                {
+                    getUserNotesCollection().addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            Log.e(TAG, "Observe note exception:$e")
+                        } else if (snapshot != null) {
+                            val notes = mutableListOf<Note>()
 
-                for (doc: QueryDocumentSnapshot in snapshot) {
-                    notes.add(doc.toObject(Note::class.java))
-                }
-                result.value = notes
-            }
-        }
-        subscribedOnDb = true
+                            for (doc: QueryDocumentSnapshot in snapshot) {
+                                notes.add(doc.toObject(Note::class.java))
+                            }
+                            result.value = notes
+                        }
+                    }
+                    subscribedOnDb = true
+                }, {
+            Log.e(TAG, "Error getting reference while subscribed for notes")
+        })
     }
     //Метод doc.toObject(Note::class.java) занимается тем, что трансформирует данные (маппинг),
     //полученные с сервера FireBase, в данные типа Note. Это значит, что в классе Note должен быть
     //пустой конструктор — это обязательный контракт для маппинга данных через FireBase. Поэтому
     //необходимо доработать класс Note.
+
+    private inline fun handleNotesReference(
+            referenceHandler: (CollectionReference) -> Unit,
+            exceptionHandler: (Throwable) -> Unit = {}
+    ) {
+        kotlin.runCatching {
+            getUserNotesCollection()
+        }
+                .fold(referenceHandler, exceptionHandler)
+    }
 }
