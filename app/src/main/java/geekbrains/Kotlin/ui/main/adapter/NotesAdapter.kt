@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import geekbrains.Kotlin.R
-import geekbrains.Kotlin.data.Note
-import geekbrains.Kotlin.data.mapToColor
+import geekbrains.Kotlin.model.Note
+import geekbrains.Kotlin.model.mapToColor
 import kotlinx.android.synthetic.main.item_note.view.*
 
 val DIFF_UTIL: DiffUtil.ItemCallback<Note> = object : DiffUtil.ItemCallback<Note>() {
